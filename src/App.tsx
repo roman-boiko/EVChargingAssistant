@@ -17,7 +17,7 @@ function App() {
     setMarkerLocation({ latitude: latitude + 0.01, longitude: longitude + 0.01 });
 
   const locationUpdateSubscription = client.subscriptions.onCarLocationUpdate().subscribe({
-    next: (data) => {
+    next: data => {
       console.log(data);
     },
   });

@@ -9,13 +9,14 @@ specifies that any user authenticated via an API key can "create", "read",
 const schema = a.schema({
   CarLocation: a
     .model({
-      deviceId: a.string(),
+      deviceId: a.id().required(),
       latitude: a.float(),
       longitude: a.float(),
       timestamp: a.string(),
       mileage: a.float(),
       battery_level: a.float()
     })
+    .identifier(["deviceId"])
     .authorization((allow) => [allow.publicApiKey()]),
   carLocationUpdate: a
     .mutation().arguments({

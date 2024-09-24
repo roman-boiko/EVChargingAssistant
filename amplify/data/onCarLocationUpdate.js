@@ -1,8 +1,8 @@
-export function request(ctx) {
-    return {
-        payload: {},
-    };
-}
 
-export function response(ctx) {
-}
+export function request() {
+    return {};
+  }
+  
+  export const response = (ctx) => {
+    return ctx.result;
+  };
