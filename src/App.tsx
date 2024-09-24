@@ -1,11 +1,11 @@
-// import type { Schema } from "../amplify/data/resource";
-// import { generateClient } from "aws-amplify/data";
+import type { Schema } from "../amplify/data/resource";
+import { generateClient } from "aws-amplify/data";
 import '@aws-amplify/ui-react/styles.css';
 import { useState } from 'react';
 import { MapView } from '@aws-amplify/ui-react-geo';
 import '@aws-amplify/ui-react-geo/styles.css';
 import { Marker } from 'react-map-gl'; 
-// const client = generateClient<Schema>();
+const client = generateClient<Schema>();
 
 function App() {
   const [isToggled, setIsToggled] = useState(false);
@@ -14,15 +14,22 @@ function App() {
     longitude: 2.3522,
   });
   const updateMarker = () =>
-    setMarkerLocation({ latitude: latitude + 5, longitude: longitude + 5 });
+    setMarkerLocation({ latitude: latitude + 0.01, longitude: longitude + 0.01 });
+
+  const locationUpdateSubscription = client.subscriptions.onCarLocationUpdate().subscribe({
+    next: (data) => {
+      console.log(data);
+    },
+  });
 
   return (
 
     <main style={{ display: "flex", flexDirection: "row", height: "100vh", width: "100vw" }}>
       <div style={{ flex: 3, padding: "10px", height: "50%" }}>
         <MapView style={{ height: "100%", width: "100%" }} initialViewState={{ longitude: 2.3522, latitude: 48.8566, zoom: 12 }}>
-          <Marker longitude={longitude} latitude={latitude} color="red" />
+          <Marker longitude={longitude} latitude={latitude}  color="red" />
         </MapView>
+        <button onClick={updateMarker}>Update Marker</button>
       </div>
       <div style={{ flex: 1, padding: "10px", display: "flex", flexDirection: "column" }}>
         <div>

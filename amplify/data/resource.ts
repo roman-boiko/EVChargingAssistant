@@ -7,11 +7,40 @@ specifies that any user authenticated via an API key can "create", "read",
 "update", and "delete" any "Todo" records.
 =========================================================================*/
 const schema = a.schema({
-  Todo: a
+  CarLocation: a
     .model({
-      content: a.string(),
+      deviceId: a.string(),
+      latitude: a.float(),
+      longitude: a.float(),
+      timestamp: a.string(),
+      mileage: a.float(),
+      battery_level: a.float()
     })
-    .authorization((allow) => [allow.owner()]),
+    .authorization((allow) => [allow.publicApiKey()]),
+  carLocationUpdate: a
+    .mutation().arguments({
+      deviceId: a.string().required(),
+      latitude: a.float().required(),
+      longitude: a.float().required(),
+      timestamp: a.string().required(),
+      mileage: a.float().required(),
+      battery_level: a.float().required()
+    })
+    .returns(a.ref("CarLocation"))
+    .authorization((allow) => [allow.publicApiKey()])
+    .handler(
+      a.handler.custom({
+      entry: "./carLocationUpdate.js"
+    })
+    ),
+    onCarLocationUpdate: a
+    .subscription()
+    .for(a.ref("carLocationUpdate"))
+    .authorization((allow) => [allow.publicApiKey()])
+    .handler(
+      a.handler.custom({
+      entry: "./onCarLocationUpdate.js"
+    }))
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -19,7 +48,7 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: "userPool",
+    defaultAuthorizationMode: "apiKey",
     // API Key is used for a.allow.public() rules
     apiKeyAuthorizationMode: {
       expiresInDays: 30,
@@ -32,7 +61,7 @@ Go to your frontend source code. From your client-side code, generate a
 Data client to make CRUDL requests to your table. (THIS SNIPPET WILL ONLY
 WORK IN THE FRONTEND CODE FILE.)
 
-Using JavaScript or Next.js React Server Components, Middleware, Server 
+Using JavaScript or Next.js React Server Components, Middleware, Server
 Actions or Pages Router? Review how to generate Data clients for those use
 cases: https://docs.amplify.aws/gen2/build-a-backend/data/connect-to-API/
 =========================================================================*/
