@@ -95,7 +95,7 @@ const eventBusRole = new Role(eventBridgeStack, "AppSyncInvokeRole", {
     PolicyStatement: new PolicyDocument({
       statements: [policyStatement],
     }),
-  },
+  }
 });
 
 // Create an EventBridge rule to route events to the AppSync API
@@ -127,36 +127,24 @@ const rule = new aws_events.CfnRule(eventBridgeStack, "MyOrderRule", {
           $deviceId: String!
           $latitude: String!
           $longitude: String!
-          $timestamp: String!
-          $mileage: String!
-          $battery_level: String!
         ) {
-          carLocationUpdate(orderId: $orderId, status: $status, message: $message) {
+          carLocationUpdate(deviceId: $deviceId, latitude: $latitude, longitude: $longitude) {
             deviceId
             latitude
             longitude
-            timestamp
-            mileage
-            battery_level
           }
         }`,
       },
       inputTransformer: {
         inputPathsMap: {
-          deviceId: "$.detail.deviceId",
-          latitude: "$.detail.latitude",
-          longitude: "$.detail.longitude",
-          timestamp: "$.detail.timestamp",
-          mileage: "$.detail.mileage",
-          battery_level: "$.detail.battery_level",
+          deviceId: "$.detail.DeviceId",
+          latitude: "$.detail.Position[1]",
+          longitude: "$.detail.Position[0]",
         },
         inputTemplate: JSON.stringify({
           deviceId: "<deviceId>",
           latitude: "<latitude>",
           longitude: "<longitude>",
-          timestamp: "<timestamp>",
-          mileage: "<mileage>",
-          battery_level: "<battery_level>",
         }),
       },
     },

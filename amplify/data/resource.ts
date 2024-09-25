@@ -1,4 +1,4 @@
-import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
+import { type ClientSchema, a, defineData, defineFunction } from "@aws-amplify/backend";
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -6,42 +6,45 @@ adding a new "isDone" field as a boolean. The authorization rule below
 specifies that any user authenticated via an API key can "create", "read",
 "update", and "delete" any "Todo" records.
 =========================================================================*/
+
+export const carLocationUpdate = defineFunction({
+  entry: "./carLocationUpdate.ts",
+
+});
 const schema = a.schema({
-  CarLocation: a
+  Car: a
     .model({
       deviceId: a.id().required(),
-      latitude: a.float(),
-      longitude: a.float(),
-      timestamp: a.string(),
-      mileage: a.float(),
-      battery_level: a.float()
-    })
-    .identifier(["deviceId"])
-    .authorization((allow) => [allow.publicApiKey()]),
+      name: a.string().required(),
+      model: a.string().required(),
+      year: a.integer().required(),
+      color: a.string().required(),
+      mileage: a.integer().required(),
+    }).authorization((allow) => [allow.publicApiKey()]),
+  CarLocation: a
+    .customType({
+      deviceId: a.string().required(),
+      latitude: a.string(),
+      longitude: a.string(),
+    }),
   carLocationUpdate: a
     .mutation().arguments({
       deviceId: a.string().required(),
-      latitude: a.float().required(),
-      longitude: a.float().required(),
-      timestamp: a.string().required(),
-      mileage: a.float().required(),
-      battery_level: a.float().required()
+      latitude: a.string().required(),
+      longitude: a.string().required(),
     })
     .returns(a.ref("CarLocation"))
-    .authorization((allow) => [allow.publicApiKey()])
+    .authorization((allow) => [allow.publicApiKey(), allow.guest()])
     .handler(
-      a.handler.custom({
-      entry: "./carLocationUpdate.js"
-    })
-    ),
-    onCarLocationUpdate: a
+      a.handler.function(carLocationUpdate)),
+  onCarLocationUpdate: a
     .subscription()
     .for(a.ref("carLocationUpdate"))
     .authorization((allow) => [allow.publicApiKey()])
     .handler(
       a.handler.custom({
-      entry: "./onCarLocationUpdate.js"
-    }))
+        entry: "./onCarLocationUpdate.js"
+      }))
 });
 
 export type Schema = ClientSchema<typeof schema>;
