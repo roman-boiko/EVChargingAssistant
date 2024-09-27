@@ -6,10 +6,21 @@ adding a new "isDone" field as a boolean. The authorization rule below
 specifies that any user authenticated via an API key can "create", "read",
 "update", and "delete" any "Todo" records.
 =========================================================================*/
+export const BEDROCK_AGENT_ID = "bedrock-agent";
+export const BEDROCK_AGENT_ALIAS_ID = "bedrock-agent-alias";
+
+export const chatFunction = defineFunction({
+  entry: "./chatFunction.ts",
+  environment: {
+    BEDROCK_AGENT_ID: "GM1R7YSQDY",
+    BEDROCK_AGENT_ALIAS_ID: "LWGZIS8ILS",
+  },
+  timeoutSeconds: 60
+});
+
 
 export const carLocationUpdate = defineFunction({
   entry: "./carLocationUpdate.ts",
-
 });
 const schema = a.schema({
   Car: a
@@ -44,7 +55,15 @@ const schema = a.schema({
     .handler(
       a.handler.custom({
         entry: "./onCarLocationUpdate.js"
-      }))
+      })),
+  chat: a
+    .query()
+    .arguments({
+      message: a.string().required(),
+    })
+    .returns(a.string())
+    .authorization((allow) => [allow.publicApiKey()])
+    .handler(a.handler.function(chatFunction)),
 });
 
 export type Schema = ClientSchema<typeof schema>;

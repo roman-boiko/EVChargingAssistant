@@ -2,7 +2,7 @@ import { defineBackend } from "@aws-amplify/backend";
 import { CfnMap } from "aws-cdk-lib/aws-location";
 import { Stack } from "aws-cdk-lib/core";
 import { auth } from "./auth/resource";
-import { data } from "./data/resource";
+import { data, chatFunction } from "./data/resource";
 import { aws_events } from "aws-cdk-lib";
 import {
   Policy,
@@ -17,7 +17,16 @@ import {
 const backend = defineBackend({
   auth,
   data,
+  chatFunction
 });
+
+// bedrock agent policy
+backend.chatFunction.resources.lambda.addToRolePolicy(new PolicyStatement({
+  actions: ["bedrock:InvokeAgent"],
+  resources: ["*"],
+}));
+
+
 
 // create a geo stack
 const geoStack = backend.createStack("geo-stack");

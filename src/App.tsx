@@ -24,8 +24,23 @@ function App() {
     chargingTwoLongitude: 0,
     chargingTwoOpacity: 0
   })
-  const [chatMessages, setChatMessages] = useState<string[]>([]);
-  const [inputText, setInputText] = useState<string>("");
+  const [prompt, setPrompt] = useState<string>("");
+  const [answer, setAnswer] = useState<string | null>(null);
+
+  const sendPrompt = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const { data, errors } = await client.queries.chat({
+      message: prompt,
+    });
+
+    if (!errors) {
+      setAnswer(data);
+      setPrompt("");
+    } else {
+      console.log(errors);
+    }
+  };
 
 
   useEffect(() => {
@@ -37,6 +52,7 @@ function App() {
       error: (error) => console.error(error),
     });
   }, []);
+
 
 
   return (
@@ -64,16 +80,17 @@ function App() {
             </button>
           </div>
           <div style={{ borderBottom: "3px solid black", padding: "10px", flex: 1, width: "100%", overflowY: "scroll", marginBottom: "10px" }}>
-            <p>{chatMessages}</p>
+            <p>{answer}</p>
           </div>
-          <input
-            type="text"
-            placeholder="Type your message here"
-            style={{ width: "100%", marginBottom: "10px" }}
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-          />
-          <button style={{ width: "100%" }}>Submit</button>
+          <form onSubmit={sendPrompt}>
+            <input
+              type="text"
+              placeholder="Type your message here"
+              style={{ width: "100%", marginBottom: "10px" }}
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+            />
+          </form>
         </div>
       </div>
     </main>
