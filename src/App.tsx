@@ -42,7 +42,7 @@ function App() {
   return (
 
     <main style={{ display: "flex", flexDirection: "row", height: "100vh", width: "100vw" }}>
-      <div style={{ flex: 3, padding: "10px", height: "50%" }}>
+      <div style={{ flex: 3, padding: "10px", height: "100%" }}>
         <MapView style={{ height: "100%", width: "100%" }} initialViewState={{ longitude: 2.3522, latitude: 48.8566, zoom: 12 }}>
           <Marker longitude={longitude} latitude={latitude}>
             <div style={{ fontSize: '24px' }}>🚗</div>
@@ -55,16 +55,15 @@ function App() {
           </Marker>
         </MapView>
       </div>
-      <div style={{ flex: 1, padding: "10px", display: "flex", flexDirection: "column" }}>
-        <div>
+      <div style={{ flex: 1, padding: "10px", display: "flex", flexDirection: "column", height: "100%" }}>
+        <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
           <div style={{ display: "flex", alignItems: "center" }}>
-
             <p>Travel Advisor</p>
             <button style={{ marginLeft: "10px" }} onClick={() => setIsToggled(!isToggled)}>
               <span role="img" aria-label="microphone">{isToggled ? "🎤" : "🔇"}</span>
             </button>
           </div>
-          <div style={{ borderBottom: "3px solid black", padding: "10px", height: "300px", width: "100%", overflowY: "scroll", flex: 1, marginBottom: "10px" }}>
+          <div style={{ borderBottom: "3px solid black", padding: "10px", flex: 1, width: "100%", overflowY: "scroll", marginBottom: "10px" }}>
             <p>{chatMessages}</p>
           </div>
           <input
