@@ -31,6 +31,11 @@ export const lowBatteryStationsUpdate = defineFunction({
 export const lowBatteryChatUpdate = defineFunction({
   entry: "./lowBatteryChatUpdate.ts",
 });
+
+export const geoFenceUpdate = defineFunction({
+  entry: "./geoFenceUpdate.ts",
+});
+
 const schema = a.schema({
   Car: a
     .model({
@@ -102,6 +107,33 @@ const schema = a.schema({
     .handler(
       a.handler.custom({
         entry: "./onLowBatteryChatUpdate.js"
+      })),
+  geoFence: a
+    .customType({
+      name: a.string(),
+      latitude: a.string(),
+      longitude: a.string(),
+      message: a.string()
+    }),
+  geoFenceUpdate: a
+    .mutation().arguments({
+      name: a.string(),
+      latitude: a.string(),
+      longitude: a.string(),
+      message: a.string()
+    })
+    .returns(a.ref("geoFence"))
+    .authorization((allow) => [allow.publicApiKey(), allow.guest()])
+    .handler(
+      a.handler.function(geoFenceUpdate)
+    ),
+  ongeoFenceUpdate: a
+    .subscription()
+    .for(a.ref("geoFenceUpdate"))
+    .authorization((allow) => [allow.publicApiKey()])
+    .handler(
+      a.handler.custom({
+        entry: "./onGeoFenceUpdate.js"
       })),
   carLocationUpdate: a
     .mutation().arguments({

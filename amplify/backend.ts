@@ -254,3 +254,51 @@ const lowBatteryStationsRule = new aws_events.CfnRule(eventBridgeStack, "LowBatt
     },
   ],
 });
+
+// Create an EventBridge rule to route events to the AppSync API to update info on the geoFence
+const geoFenceRule = new aws_events.CfnRule(eventBridgeStack, "GeoFenceUpdate", {
+  eventBusName: eventBus.eventBusName,
+  name: "GeoFenceEventBridgeRule",
+  eventPattern: {
+    source: ["geofenceEventHandler.eventsHandler.lambda"],
+    ["detail-type"]: ["GeofenceEventResult"],
+  },
+  targets: [
+    {
+      id: "geoFenceReceiver",
+      arn: backend.data.resources.cfnResources.cfnGraphqlApi
+        .attrGraphQlEndpointArn,
+      roleArn: eventBusRole.roleArn,
+      appSyncParameters: {
+        graphQlOperation: `
+        mutation geoFenceUpdate(
+          $name: String!
+          $latitude: String!
+          $longitude: String!
+          $message: String!
+        ) {
+          geoFenceUpdate(name: $name, latitude: $latitude, longitude: $longitude, message: $message) {
+            name
+            latitude
+            longitude
+            message
+          }
+        }`,
+      },
+      inputTransformer: {
+        inputPathsMap: {
+          name: "$.detail.name",
+          latitude: "$.detail.geo[1]",
+          longitude: "$.detail.geo[0]",
+          message: "$.detail.chat_message",
+        },
+        inputTemplate: JSON.stringify({
+          name: "<name>",
+          latitude: "<latitude>",
+          longitude: "<longitude>",
+          message: "<message>",
+        }),
+      },
+    },
+  ],
+});

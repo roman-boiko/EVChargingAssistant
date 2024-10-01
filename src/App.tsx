@@ -12,6 +12,7 @@ function App() {
   const [isToggled, setIsToggled] = useState(false);
   const [showOnePopup, setShowOnePopup] = useState(false);
   const [showTwoPopup, setShowTwoPopup] = useState(false);
+  const [showGeoPopup, setShowGeoPopup] = useState(false);
   const [{ latitude, longitude }, setMarkerLocation] = useState({
     latitude: 48.8566,
     longitude: 2.3522,
@@ -29,6 +30,13 @@ function App() {
     chargingTwoOpacity: 0,
     chargingTwoAddress: "",
     chargingTwoDistance: ""
+  })
+  const [{ geoLatitude, geoLongitude, geoName, geoTitle, geoOpacity }, setGeoLocation] = useState({
+    geoLatitude: 0,
+    geoLongitude: 0,
+    geoName: "",
+    geoTitle: "",
+    geoOpacity: 0
   })
   const [prompt, setPrompt] = useState<string>("");
   const [answer, setAnswer] = useState<string | null>(null);
@@ -56,6 +64,11 @@ function App() {
   const handleTwoMarkerClick = ({ originalEvent }) => {
     originalEvent.stopPropagation();
     setShowTwoPopup(true);
+  };
+
+  const handleGeoMarkerClick = ({ originalEvent }) => {
+    originalEvent.stopPropagation();
+    setShowGeoPopup(true);
   };
 
   useEffect(() => {
@@ -105,6 +118,22 @@ function App() {
     });
   }, []);
 
+  useEffect(() => {
+    client.subscriptions.ongeoFenceUpdate().subscribe({
+      next: (data) => {
+        setGeoLocation({
+          geoLatitude: Number(data.latitude) || 0,
+          geoLongitude: Number(data.longitude) || 0,
+          geoName: data.name || "",
+          geoTitle: data.message || "",
+          geoOpacity: 1
+        });
+        setShowGeoPopup(true);
+      },
+      error: (error) => console.error(error),
+    });
+  }, []);
+
 
 
   return (
@@ -141,6 +170,20 @@ function App() {
             >
               <p>{chargingTwoAddress}</p>
               <p>Distance: {chargingTwoDistance}</p>
+            </Popup>
+          )}
+          <Marker longitude={geoLongitude} latitude={geoLatitude} style={{ opacity: geoOpacity }} onClick={handleGeoMarkerClick}>
+            <div style={{ fontSize: '24px' }}>🍽️</div>
+          </Marker>
+          {showGeoPopup && (
+            <Popup
+              latitude={geoLatitude}
+              longitude={geoLongitude}
+              offset={{ bottom: [0, -40] }}
+              onClose={() => setShowGeoPopup(false)}
+            >
+              <p>{geoName}</p>
+              <p>Description: {geoTitle}</p>
             </Popup>
           )}
         </MapView>
