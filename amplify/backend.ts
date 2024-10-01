@@ -107,17 +107,12 @@ const eventBusRole = new Role(eventBridgeStack, "AppSyncInvokeRole", {
   }
 });
 
-// Create an EventBridge rule to route events to the AppSync API
-const rule = new aws_events.CfnRule(eventBridgeStack, "MyOrderRule", {
+// Create an EventBridge rule to route events to the AppSync API to update the car location
+const carLocationRule = new aws_events.CfnRule(eventBridgeStack, "CarLocationUpdate", {
   eventBusName: eventBus.eventBusName,
   name: "CarLocationEventBridgeRule",
   eventPattern: {
     source: ["aws.geo"],
-    /* The shape of the event pattern must match EventBridge's event message structure.
-    So, this field must be spelled as "detail-type". Otherwise, events will not trigger the rule.
-
-    https://docs.aws.amazon.com/AmazonS3/latest/userguide/ev-events.html
-    */
     ["detail-type"]: ["Location Device Position Event"],
     detail: {
       EventType: ["UPDATE"],
@@ -154,6 +149,106 @@ const rule = new aws_events.CfnRule(eventBridgeStack, "MyOrderRule", {
           deviceId: "<deviceId>",
           latitude: "<latitude>",
           longitude: "<longitude>",
+        }),
+      },
+    },
+  ],
+});
+
+// Create an EventBridge rule to route events to the AppSync API to update the chat on low battery
+const lowBatteryChatRule = new aws_events.CfnRule(eventBridgeStack, "LowBatteryChatUpdate", {
+  eventBusName: eventBus.eventBusName,
+  name: "LowBatteryChatEventBridgeRule",
+  eventPattern: {
+    source: ["lowBatteryHandler.eventsHandler.lambda"],
+    ["detail-type"]: ["lowBatteryChat"],
+  },
+  targets: [
+    {
+      id: "lowBatteryChatReceiver",
+      arn: backend.data.resources.cfnResources.cfnGraphqlApi
+        .attrGraphQlEndpointArn,
+      roleArn: eventBusRole.roleArn,
+      appSyncParameters: {
+        graphQlOperation: `
+        mutation lowBatteryChatUpdate(
+          $message: String!
+        ) {
+          lowBatteryChatUpdate(message: $message) {
+            message
+          }
+        }`,
+      },
+      inputTransformer: {
+        inputPathsMap: {
+          message: "$.detail.chat_message.completion",
+        },
+        inputTemplate: JSON.stringify({
+          message: "<message>",
+        }),
+      },
+    },
+  ],
+});
+
+// Create an EventBridge rule to route events to the AppSync API to update the stations on low battery
+const lowBatteryStationsRule = new aws_events.CfnRule(eventBridgeStack, "LowBatteryStationsUpdate", {
+  eventBusName: eventBus.eventBusName,
+  name: "LowBatteryStationsEventBridgeRule",
+  eventPattern: {
+    source: ["lowBatteryHandler.eventsHandler.lambda"],
+    ["detail-type"]: ["lowBatterySations"],
+  },
+  targets: [
+    {
+      id: "lowBatteryStationsReceiver",
+      arn: backend.data.resources.cfnResources.cfnGraphqlApi
+        .attrGraphQlEndpointArn,
+      roleArn: eventBusRole.roleArn,
+      appSyncParameters: {
+        graphQlOperation: `
+        mutation lowBatteryStationsUpdate(
+          $station1Address: String!
+          $station1Latitude: String!
+          $station1Longitude: String!
+          $station1Distance: String!
+          $station2Address: String!
+          $station2Latitude: String!
+          $station2Longitude: String!
+          $station2Distance: String!
+        ) {
+          lowBatteryStationsUpdate(station1Address: $station1Address, station1Latitude: $station1Latitude, station1Longitude: $station1Longitude, station1Distance: $station1Distance, station2Address: $station2Address, station2Latitude: $station2Latitude, station2Longitude: $station2Longitude, station2Distance: $station2Distance) {
+            station1Address
+            station1Latitude
+            station1Longitude
+            station1Distance
+            station2Address
+            station2Latitude
+            station2Longitude
+            station2Distance
+          }
+        }`,
+      },
+      inputTransformer: {
+        inputPathsMap: {
+          station1Address: "$.detail.neareastStations.nearestChargingStations[0].address",
+          station1Latitude: "$.detail.neareastStations.nearestChargingStations[0].coordinates[1]",
+          station1Longitude: "$.detail.neareastStations.nearestChargingStations[0].coordinates[0]",
+          station1Distance: "$.detail.neareastStations.nearestChargingStations[0].distance",
+          station2Address: "$.detail.neareastStations.nearestChargingStations[1].address",
+          station2Latitude: "$.detail.neareastStations.nearestChargingStations[1].coordinates[1]",
+          station2Longitude: "$.detail.neareastStations.nearestChargingStations[1].coordinates[0]",
+          station2Distance: "$.detail.neareastStations.nearestChargingStations[1].distance",
+        },
+        inputTemplate: JSON.stringify({
+          station1Address: "<station1Address>",
+          station1Latitude: "<station1Latitude>",
+          station1Longitude: "<station1Longitude>",
+          station1Distance: "<station1Distance>",
+          station2Address: "<station2Address>",
+          station2Latitude: "<station2Latitude>",
+          station2Longitude: "<station2Longitude>",
+          station2Distance: "<station2Distance>",
         }),
       },
     },

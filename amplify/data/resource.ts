@@ -12,15 +12,24 @@ export const BEDROCK_AGENT_ALIAS_ID = "bedrock-agent-alias";
 export const chatFunction = defineFunction({
   entry: "./chatFunction.ts",
   environment: {
-    BEDROCK_AGENT_ID: "GM1R7YSQDY",
-    BEDROCK_AGENT_ALIAS_ID: "LWGZIS8ILS",
+    BEDROCK_AGENT_ID: "7JDUU05B8X",
+    BEDROCK_AGENT_ALIAS_ID: "DGCEGAJ3G4",
   },
-  timeoutSeconds: 60
+  timeoutSeconds: 60,
+
 });
 
 
 export const carLocationUpdate = defineFunction({
   entry: "./carLocationUpdate.ts",
+});
+
+export const lowBatteryStationsUpdate = defineFunction({
+  entry: "./lowBatteryStationsUpdate.ts",
+});
+
+export const lowBatteryChatUpdate = defineFunction({
+  entry: "./lowBatteryChatUpdate.ts",
 });
 const schema = a.schema({
   Car: a
@@ -38,6 +47,62 @@ const schema = a.schema({
       latitude: a.string(),
       longitude: a.string(),
     }),
+  LowBatteryStations: a
+    .customType({
+      station1Address: a.string(),
+      station1Latitude: a.string(),
+      station1Longitude: a.string(),
+      station1Distance: a.string(),
+      station2Address: a.string(),
+      station2Latitude: a.string(),
+      station2Longitude: a.string(),
+      station2Distance: a.string(),
+    }),
+  lowBatteryStationsUpdate: a
+    .mutation().arguments({
+      station1Address: a.string(),
+      station1Latitude: a.string(),
+      station1Longitude: a.string(),
+      station1Distance: a.string(),
+      station2Address: a.string(),
+      station2Latitude: a.string(),
+      station2Longitude: a.string(),
+      station2Distance: a.string(),
+    })
+    .returns(a.ref("LowBatteryStations"))
+    .authorization((allow) => [allow.publicApiKey(), allow.guest()])
+    .handler(
+      a.handler.function(lowBatteryStationsUpdate)
+    ),
+  onlowBatteryStationsUpdate: a
+    .subscription()
+    .for(a.ref("lowBatteryStationsUpdate"))
+    .authorization((allow) => [allow.publicApiKey()])
+    .handler(
+      a.handler.custom({
+        entry: "./onLowBatteryStationsUpdate.js"
+      })),
+  LowBatteryChat: a
+    .customType({
+      message: a.string()
+    }),
+  lowBatteryChatUpdate: a
+    .mutation().arguments({
+      message: a.string()
+    })
+    .returns(a.ref("LowBatteryChat"))
+    .authorization((allow) => [allow.publicApiKey(), allow.guest()])
+    .handler(
+      a.handler.function(lowBatteryChatUpdate)
+    ),
+  onlowBatteryChatUpdate: a
+    .subscription()
+    .for(a.ref("lowBatteryChatUpdate"))
+    .authorization((allow) => [allow.publicApiKey()])
+    .handler(
+      a.handler.custom({
+        entry: "./onLowBatteryChatUpdate.js"
+      })),
   carLocationUpdate: a
     .mutation().arguments({
       deviceId: a.string().required(),
