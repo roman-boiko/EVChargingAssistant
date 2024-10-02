@@ -140,12 +140,14 @@ function App() {
 
     <main style={{ display: "flex", flexDirection: "row", height: "100vh", width: "100vw" }}>
       <div style={{ flex: 3, padding: "10px", height: "100%" }}>
-        <MapView style={{ height: "100%", width: "100%" }} initialViewState={{ longitude: 2.3522, latitude: 48.8566, zoom: 12 }}>
+        <MapView style={{ height: "100%", width: "100%" }} initialViewState={{ longitude: 2.3522, latitude: 48.8566, zoom: 10 }}>
           <Marker longitude={longitude} latitude={latitude}>
             <div style={{ fontSize: '24px' }}>🚗</div>
           </Marker>
           <Marker longitude={chargingOneLongitude} latitude={chargingOneLatitude} style={{ opacity: chargingOneOpacity }} onClick={handleOneMarkerClick}>
-            <div style={{ fontSize: '24px' }}>🔋</div>
+            <div style={{ backgroundColor: 'green', borderRadius: '50%', padding: '2px' }}>
+              <img src="/battery.png" alt="Battery" style={{ width: '24px', height: '24px' }} />
+            </div>
           </Marker>
           {showOnePopup && (
             <Popup
@@ -159,7 +161,9 @@ function App() {
             </Popup>
           )}
           <Marker longitude={chargingTwoLongitude} latitude={chargingTwoLatitude} style={{ opacity: chargingTwoOpacity }} onClick={handleTwoMarkerClick}>
-            <div style={{ fontSize: '24px' }}>🔋</div>
+            <div style={{ backgroundColor: 'yellow', borderRadius: '50%', padding: '2px' }}>
+              <img src="/battery.png" alt="Battery" style={{ width: '24px', height: '24px' }} />
+            </div>
           </Marker>
           {showTwoPopup && (
             <Popup
