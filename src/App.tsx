@@ -128,6 +128,7 @@ function App() {
           geoTitle: data.message || "",
           geoOpacity: 1
         });
+        setAnswer(data.message || "");
         setShowGeoPopup(true);
       },
       error: (error) => console.error(error),
@@ -187,7 +188,7 @@ function App() {
               onClose={() => setShowGeoPopup(false)}
             >
               <p>{geoName}</p>
-              <p>Description: {geoTitle}</p>
+              {/* <p>Description: {geoTitle}</p> */}
             </Popup>
           )}
         </MapView>
